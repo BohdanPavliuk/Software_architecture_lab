@@ -34,13 +34,22 @@ async def send_msg(data: Msg):
 
 @app.get("/fassade_service")
 async def get_combined():
+    logs = []
+    static_msg = "unavailable"
+
     async with httpx.AsyncClient() as client:
-        logs_resp = await client.get(LOGGING_URL)
-        msg_resp = await client.get(MESSAGE_URL)
+        try:
+            logs_resp = await client.get(LOGGING_URL)
+            logs = logs_resp.json().get("logs", [])
+        except httpx.RequestError as e:
+            print(f"[ERROR] Could not reach logging_service: {e}")
+            logs = ["<logging unavailable>"]
+        try:
+            msg_resp = await client.get(MESSAGE_URL)
+            static_msg = msg_resp.json().get("message", "unavailable")
+        except httpx.RequestError as e:
+            print(f"[ERROR] Could not reach message_service: {e}")
+            static_msg = "<message unavailable>"
 
-    logs = logs_resp.json().get("logs", [])
-    static_msg = msg_resp.json().get("message", "")
-
-    result_str = f"{logs} : {static_msg}"  
-
+    result_str = f"{logs} : {static_msg}"
     return {"result": result_str}
