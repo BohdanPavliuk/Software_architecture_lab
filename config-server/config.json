@@ -1,0 +1,11 @@
+{
+    "logging-service": [
+      "http://logging1:8000",
+      "http://logging2:8000",
+      "http://logging3:8000"
+    ],
+    "messages-service": [
+      "http://messages1:8000"
+    ]
+  }
+  

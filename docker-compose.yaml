@@ -1,26 +1,55 @@
-version: '3.8'
 
 services:
-  messages-service:
-    build:
-      context: ./messages_service
+  facade-service:
+      build: ./facade-service
+      ports:
+        - "8001:8000"
+      environment:
+        - CONFIG_SERVER=http://config-server:8500
+      depends_on:
+        - config-server
+
+  hazelcast1:
+    image: hazelcast/hazelcast:5.3
+    container_name: hazelcast1
+
+  hazelcast2:
+    image: hazelcast/hazelcast:5.3
+    container_name: hazelcast2
+
+  hazelcast3:
+    image: hazelcast/hazelcast:5.3
+    container_name: hazelcast3
+
+  logging1:
+    build: ./logging-service
+    environment:
+      - HZ_HOST=hazelcast1:5701
     ports:
       - "8002:8000"
-    container_name: messages_service
-
-  logging-service:
-    build:
-      context: ./logging_service
-    ports:
-      - "8001:8000"
-    container_name: logging_service
-
-  facade-service:
-    build:
-      context: ./facade_service
-    ports:
-      - "8000:8000"
     depends_on:
-      - logging-service
-      - messages-service
-    container_name: facade_service
+      - hazelcast1
+
+  logging2:
+    build: ./logging-service
+    environment:
+      - HZ_HOST=hazelcast2:5701
+    ports:
+      - "8003:8000"
+    depends_on:
+      - hazelcast2
+
+  logging3:
+    build: ./logging-service
+    environment:
+      - HZ_HOST=hazelcast3:5701
+    ports:
+      - "8004:8000"
+    depends_on:
+      - hazelcast3
+  
+  config-server:
+    build: ./config-server
+    ports:
+      - "8500:8500"
+
