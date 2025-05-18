@@ -1,55 +1,85 @@
-
 services:
-  facade-service:
-      build: ./facade-service
-      ports:
-        - "8001:8000"
-      environment:
-        - CONFIG_SERVER=http://config-server:8500
-      depends_on:
-        - config-server
-
   hazelcast1:
     image: hazelcast/hazelcast:5.3
     container_name: hazelcast1
+    ports:
+      - "5701:5701"
+    networks:
+      - hz-net
 
   hazelcast2:
     image: hazelcast/hazelcast:5.3
     container_name: hazelcast2
+    ports:
+      - "5702:5701"
+    networks:
+      - hz-net
 
   hazelcast3:
     image: hazelcast/hazelcast:5.3
     container_name: hazelcast3
+    ports:
+      - "5703:5701"
+    networks:
+      - hz-net
 
-  logging1:
-    build: ./logging-service
+  facade:
+    build:
+      context: ./facade-service
+    ports:
+      - "8000:8000"
+    networks:
+      - hz-net
+
+  messages1:
+    build:
+      context: ./messages-service
+    ports:
+      - "8001:8000"
     environment:
-      - HZ_HOST=hazelcast1:5701
+      - INSTANCE_ID=msg1
+    networks:
+      - hz-net
+
+  messages2:
+    build:
+      context: ./messages-service
     ports:
       - "8002:8000"
-    depends_on:
-      - hazelcast1
+    environment:
+      - INSTANCE_ID=msg2
+    networks:
+      - hz-net
+
+  logging1:
+    build:
+      context: ./logging-service
+    ports:
+      - "8010:8000"
+    environment:
+      - INSTANCE_ID=log1
+    networks:
+      - hz-net
 
   logging2:
-    build: ./logging-service
-    environment:
-      - HZ_HOST=hazelcast2:5701
+    build:
+      context: ./logging-service
     ports:
-      - "8003:8000"
-    depends_on:
-      - hazelcast2
+      - "8011:8000"
+    environment:
+      - INSTANCE_ID=log2
+    networks:
+      - hz-net
 
   logging3:
-    build: ./logging-service
+    build:
+      context: ./logging-service
+    ports:
+      - "8012:8000"
     environment:
-      - HZ_HOST=hazelcast3:5701
-    ports:
-      - "8004:8000"
-    depends_on:
-      - hazelcast3
-  
-  config-server:
-    build: ./config-server
-    ports:
-      - "8500:8500"
+      - INSTANCE_ID=log3
+    networks:
+      - hz-net
 
+networks:
+  hz-net:

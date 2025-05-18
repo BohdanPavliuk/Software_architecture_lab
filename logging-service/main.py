@@ -1,22 +1,29 @@
-from fastapi import FastAPI, Request
-from hazelcast import HazelcastClient
 import os
+from fastapi import FastAPI, Request
+import hazelcast
+from uuid import uuid4
 
 app = FastAPI()
-hz = HazelcastClient(cluster_members=[os.getenv("HZ_HOST", "hazelcast1:5701")])
-log_map = hz.get_map("logs").blocking()
+INSTANCE_ID = os.getenv("INSTANCE_ID", "unknown")
+
+hz = hazelcast.HazelcastClient(
+    cluster_members=["hazelcast1:5701", "hazelcast2:5701", "hazelcast3:5701"]
+)
+log_map = hz.get_map("log-map").blocking()
 
 @app.post("/log")
-async def add_log(request: Request):
+async def log_message(request: Request):
     data = await request.json()
-    key = data.get("key")
-    value = data.get("value")
-    log_map.put(key, value)
-    print(f"Stored: {key} -> {value}")
-    return {"status": "ok"}
+    msg = data.get("msg", "unknown")
 
-@app.get("/log/{key}")
-async def get_log(key: str):
-    value = log_map.get(key)
-    print(f"Retrieved: {key} -> {value}")
-    return {"key": key, "value": value}
+    log_id = str(uuid4())
+    log_entry = f"[LogSvc {INSTANCE_ID}] {msg}"
+    log_map.set(log_id, log_entry) 
+    print(log_entry)
+
+    return {"status": "logged", "msg": msg, "id": log_id}
+
+@app.get("/logs")
+def get_logs():
+    entries = log_map.entry_set()
+    return {"logs": [value for key, value in entries]}
