@@ -1,0 +1,23 @@
+<hazelcast xmlns="http://www.hazelcast.com/schema/config"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.hazelcast.com/schema/config
+           http://www.hazelcast.com/schema/config/hazelcast-config-5.3.xsd">
+
+    <cluster-name>dev</cluster-name>
+
+    <network>
+        <join>
+            <multicast enabled="false"/>
+            <tcp-ip enabled="true">
+                <member>hazelcast1</member>
+                <member>hazelcast2</member>
+                <member>hazelcast3</member>
+            </tcp-ip>
+        </join>
+    </network>
+
+    <queue name="msg-queue">
+        <backup-count>2</backup-count>
+        <async-backup-count>0</async-backup-count>
+    </queue>
+</hazelcast>
