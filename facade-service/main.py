@@ -8,12 +8,12 @@ import consul
 
 app = FastAPI()
 
-# --- Service Identity ---
+
 INSTANCE_ID = os.getenv("INSTANCE_ID", "unknown")
 SERVICE_NAME = "facade-service"
 PORT = 8000
 
-# --- Consul client ---
+
 def get_consul_client():
     return consul.Consul(host=os.getenv("CONSUL_HOST", "consul"), port=8500)
 
@@ -43,7 +43,7 @@ def discover_service(service_name):
         return None
     return random.choice(nodes)["Service"]
 
-# --- Load Hazelcast and Queue config from Consul ---
+
 hz_members = get_consul_kv("hz/cluster_members")
 hz_cluster = hz_members.split(",") if hz_members else ["hazelcast1:5701"]
 queue_name = get_consul_kv("hz/queue_name") or "msg-queue"
@@ -57,7 +57,7 @@ async def post_message(request: Request):
     msg = data.get("msg")
     queue.put(msg)
 
-    # Discover logging-service
+
     log_svc = discover_service("logging-service")
     if log_svc:
         logging_url = f"http://{log_svc['Address']}:{log_svc['Port']}/log"

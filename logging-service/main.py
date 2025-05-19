@@ -7,12 +7,12 @@ import consul
 
 app = FastAPI()
 
-# --- Service Identity ---
+
 INSTANCE_ID = os.getenv("INSTANCE_ID", "unknown")
 SERVICE_NAME = "logging-service"
-PORT = 8000  # default FastAPI port
+PORT = 8000 
 
-# --- Consul Client ---
+
 def get_consul_client():
     return consul.Consul(host=os.getenv("CONSUL_HOST", "consul"), port=8500)
 
@@ -35,7 +35,7 @@ def register_to_consul():
         check=consul.Check.http(f"http://{ip}:{PORT}/health", interval="10s")
     )
 
-# --- Hazelcast Setup from Consul KV ---
+
 hz_members = get_consul_kv("hz/cluster_members")
 hz_cluster = hz_members.split(",") if hz_members else ["hazelcast1:5701"]
 

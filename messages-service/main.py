@@ -4,12 +4,12 @@ import consul
 
 app = FastAPI()
 
-# --- Service Identity ---
+
 INSTANCE_ID = os.getenv("INSTANCE_ID", "unknown")
 SERVICE_NAME = "messages-service"
 PORT = 8000
 
-# --- Consul Client ---
+
 def get_consul_client():
     return consul.Consul(host=os.getenv("CONSUL_HOST", "consul"), port=8500)
 
@@ -32,17 +32,17 @@ def register_to_consul():
         check=consul.Check.http(f"http://{ip}:{PORT}/health", interval="10s")
     )
 
-# --- Hazelcast Queue Config from KV ---
+
 hz_members = get_consul_kv("hz/cluster_members")
 hz_cluster = hz_members.split(",") if hz_members else ["hazelcast1:5701"]
 queue_name = get_consul_kv("hz/queue_name") or "msg-queue"
 
-# --- Hazelcast Setup ---
+
 hz = hazelcast.HazelcastClient(cluster_members=hz_cluster)
 queue = hz.get_queue(queue_name).blocking()
 stored = []
 
-# --- Consumer Thread ---
+
 def consume_loop():
     print(f"[MsgSvc {INSTANCE_ID}] Consumer loop running.")
     time.sleep(2)
